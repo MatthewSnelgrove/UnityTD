@@ -35,11 +35,12 @@ public class EnemyScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        
         gameCon = GameObject.Find("GameController").GetComponent<GameController>();
         moveState = 0;
         goal = gameCon.turns[0];
-        offsetX = ((Random.value - 0.5f) / 2.5f*25);
-        offsetY = ((Random.value - 0.5f) / 2.5f * 25);
+        offsetX = ((Random.value - 0.5f) * 5);
+        offsetY = ((Random.value - 0.5f) * 5);
         transform.position = new Vector2(goal.transform.position.x + offsetX, goal.transform.position.y + offsetY);
         sr = GetComponent<SpriteRenderer>();
         sr.sortingOrder = 2;
@@ -53,20 +54,25 @@ public class EnemyScript : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (moveState == 20)
-        {
-            Destroy(gameObject);
-            GameObject gameCon = GameObject.Find("GameController");
-            gameCon.GetComponent<GameController>().lives -= damage;
-        }
+        
         goalPosition = new Vector2(goal.transform.position.x + offsetX, goal.transform.position.y + offsetY);
 
         transform.position = Vector2.MoveTowards(transform.position, goalPosition, currentSpeed);
 
         if (transform.position == goalPosition)
         {
-            moveState += 1;
-            goal = gameCon.turns[moveState];
+            if (moveState == gameCon.turns.Length - 1)
+            {
+                Destroy(gameObject);
+                GameObject gameCon = GameObject.Find("GameController");
+                gameCon.GetComponent<GameController>().lives -= damage;
+            }
+            else
+            {
+                moveState += 1;
+                goal = gameCon.turns[moveState];
+            }
+
         }
         if (health < 1)
         {
@@ -87,7 +93,7 @@ public class EnemyScript : MonoBehaviour
         }
 
         timer += Time.deltaTime;
-        if (timer*currentSpeed > 0.75f)
+        if (timer * currentSpeed > 0.75f)
         {
             for (int i = 0; i < 10; i++)
             {
@@ -98,7 +104,7 @@ public class EnemyScript : MonoBehaviour
                     timer = 0f;
                 }
             }
-            if (timer*currentSpeed > 0.75f)
+            if (timer * currentSpeed > 0.75f)
             {
                 for (int i = 10; i < 20; i++)
                 {

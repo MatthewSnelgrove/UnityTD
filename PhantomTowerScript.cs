@@ -4,34 +4,30 @@ using UnityEngine;
 
 public class PhantomTowerScript : MonoBehaviour
 {
-    public GameObject towerScriptHolder;
+
+    public TowerStatsSO towerStats;
     public SpriteRenderer sr;
-    public Sprite towerSprite;
-    public float size;
-    public float colliderLength;
-    public float colliderHeight;
-    public float colliderOffsetX;
-    public float colliderOffsetY;
-    public float damageDone;
     public GameController gameCon;
     public GameObject rangeDisplayPrefab;
-    public int id;
-    public float range;
+    public PolygonCollider2D water;
+    public PolygonCollider2D road;
     public Sprite[] rangeSprites;
-
-    public bool canPlace = true;
+    public bool canPlace;
     // Start is called before the first frame update
     void Start()
     {
         sr.sortingOrder = 2;
+        sr.sprite = towerStats.towerSprite;
         canPlace = true;
         gameCon = GameObject.Find("GameController").GetComponent<GameController>();
-        gameObject.transform.localScale = new Vector2(size, size);
-        var rangeDisplayVar = Instantiate(rangeDisplayPrefab, gameObject.transform.position, Quaternion.identity);    
+        var rangeDisplayVar = Instantiate(rangeDisplayPrefab, gameObject.transform.position, Quaternion.identity);
         rangeDisplayVar.transform.parent = gameObject.transform;
-        rangeDisplayVar.transform.localScale = new Vector2(range/size, range/size);
-        gameObject.GetComponent<BoxCollider2D>().size = new Vector2(colliderLength, colliderHeight);
-        gameObject.GetComponent<BoxCollider2D>().offset = new Vector2(colliderOffsetX, colliderOffsetY);
+        rangeDisplayVar.transform.localScale = new Vector2(towerStats.range, towerStats.range);
+        gameObject.GetComponent<BoxCollider2D>().size = new Vector2(towerStats.colliderLength, towerStats.colliderHeight);
+        gameObject.GetComponent<BoxCollider2D>().offset = new Vector2(towerStats.colliderOffsetX, towerStats.colliderOffsetY);
+
+        water = GameObject.Find("Water").GetComponent<PolygonCollider2D>();
+        road = GameObject.Find("Road").GetComponent<PolygonCollider2D>();
 
     }
 
@@ -44,7 +40,7 @@ public class PhantomTowerScript : MonoBehaviour
         gameCon.GetComponent<GameController>().placeable = canPlace;
 
 
-       if (gameCon.GetComponent<GameController>().activePhantomTower == -1)
+        if (gameCon.GetComponent<GameController>().activePhantomTower == -1)
         {
             Destroy(gameObject);
         }
@@ -55,23 +51,19 @@ public class PhantomTowerScript : MonoBehaviour
     private void OnTriggerExit2D(Collider2D col)
     {
         canPlace = true;
-        gameObject.GetComponent<SpriteRenderer>().sprite = towerScriptHolder.GetComponent<TowerScript>().towerSprites[id * 3 - 2];
-        GameObject rangeObject = gameObject.transform.Find("Range(Clone)").gameObject;
-        rangeObject.GetComponent<SpriteRenderer>().sprite = rangeSprites[0];
+        GetComponent<SpriteRenderer>().sprite = towerStats.towerSprite;
+        gameObject.transform.Find("Range(Clone)").gameObject.GetComponent<SpriteRenderer>().sprite = rangeSprites[0];
     }
 
     private void OnTriggerStay2D(Collider2D col)
     {
-        canPlace = false;
-        gameObject.GetComponent<SpriteRenderer>().sprite = towerScriptHolder.GetComponent<TowerScript>().towerSprites[id * 3 - 1];
-        GameObject rangeObject = gameObject.transform.Find("Range(Clone)").gameObject;
-        rangeObject.GetComponent<SpriteRenderer>().sprite = rangeSprites[1];
+
+        if (col.CompareTag("Unplaceable") || col.CompareTag("Tower"))
+        {
+            canPlace = false;
+            GetComponent<SpriteRenderer>().sprite = towerStats.towerSpriteRed;
+            gameObject.transform.Find("Range(Clone)").gameObject.GetComponent<SpriteRenderer>().sprite = rangeSprites[1];
+        }
     }
-    private void OnTriggerEnter2D(Collider2D col)
-    {
-        canPlace = false;
-        gameObject.GetComponent<SpriteRenderer>().sprite = towerScriptHolder.GetComponent<TowerScript>().towerSprites[id * 3 - 1];
-        GameObject rangeObject = gameObject.transform.Find("Range(Clone)").gameObject;
-        rangeObject.GetComponent<SpriteRenderer>().sprite = rangeSprites[1];
-    }
+
 }

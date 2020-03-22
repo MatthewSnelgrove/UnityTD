@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class BuyButtonScript : MonoBehaviour
+public class ButtonScript : MonoBehaviour
 {
     public GameController gameCon;
     // Start is called before the first frame update

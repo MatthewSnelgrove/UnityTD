@@ -6,12 +6,19 @@ public class Shooting : MonoBehaviour
 {
     public GameObject bullet;
     float shotDelay;
+    float animDelay;
     public GameObject target;
+    public bool active;
     public GameObject farthestEnemy;
     float rotation;
     Quaternion targetRotationQuaternion;
     float targetRotation;
-    public int towerType;
+    public TowerStatsSO baseTowerStats;
+    public TowerStatsSO towerStats;
+    public Animator animator;
+    public AnimatorOverrideController baseAOC;
+    public AnimatorOverrideController AOC;
+    public Vector3 lastPos;
     
 
 
@@ -25,32 +32,40 @@ public class Shooting : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        towerType=GetComponent<TowerScript>().id;
+        active = false;
+        towerStats = Instantiate(baseTowerStats);
+
+        AOC = Instantiate(baseAOC);
+        AOC["Tower1BuildAnim"] = towerStats.build;
+        AOC["Tower1IdleAnim"] = towerStats.idle;
+        AOC["Tower1ShootAnim"] = towerStats.shoot;
+        animator.runtimeAnimatorController = AOC;
+        
+
+
+    }
+
+    void doneBuild()
+    {
+        animator.speed = towerStats.frequency;
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
         target = FindTarget();
-
-        shotDelay -= Time.deltaTime;
-        if (target != null)
+        if (target != null) 
         {
-            Vector3 targetPos = target.transform.position;
-            targetRotationQuaternion = Quaternion.LookRotation(Vector3.forward, targetPos - gameObject.transform.position);
-            targetRotation = targetRotationQuaternion.eulerAngles.z;
-
-            if (shotDelay < 0)
-            {
-                shotDelay = 1 / GetComponent<TowerScript>().frequency;
-                Shoot(target);
-                GetComponent<SpriteRenderer>().sprite = GetComponent<TowerScript>().towerSprites[towerType * 3 - 2];
-            }
-        } else
+            animator.SetBool("isShooting", true);
+            lastPos = target.transform.position;
+        }
+           
+        else
         {
-            GetComponent<SpriteRenderer>().sprite = GetComponent<TowerScript>().towerSprites[towerType * 3 - 3];
+            animator.SetBool("isShooting", false);
         }
     }
+
 
    GameObject FindTarget()
    {
@@ -58,7 +73,8 @@ public class Shooting : MonoBehaviour
         farthestEnemy = null;
         foreach (GameObject enemy in enemies)
         {
-            if (Vector2.Distance(transform.position, enemy.transform.position) <= GetComponent<TowerScript>().range && (farthestEnemy == null || enemy.GetComponent<EnemyScript>().distanceTraveled > farthestEnemy.GetComponent<EnemyScript>().distanceTraveled))
+            
+            if (Vector2.Distance(transform.position, enemy.transform.position) <= towerStats.range && (farthestEnemy == null || enemy.GetComponent<EnemyScript>().distanceTraveled > farthestEnemy.GetComponent<EnemyScript>().distanceTraveled))
             {
                 farthestEnemy = enemy;
             }
@@ -66,64 +82,80 @@ public class Shooting : MonoBehaviour
         return farthestEnemy;
    }
 
-    void Shoot(GameObject target)
+    
+    public void Shoot()
     {
+        Vector3 targetPos;
 
-        if (gameObject.GetComponent<TowerScript>().numOfShots == 1)
+        if (target == null)
         {
-            rotation = targetRotation;
-            spawnBullet();
+            target = FindTarget();
+        }
+        if (target == null)
+        {
+            targetPos = lastPos;
+        }
+        else
+        {
+            targetPos = target.transform.position;
         }
 
-        if (gameObject.GetComponent<TowerScript>().numOfShots > 1)
+        targetRotationQuaternion = Quaternion.LookRotation(Vector3.forward, targetPos - gameObject.transform.position);
+        targetRotation = targetRotationQuaternion.eulerAngles.z;
+        
+        if (towerStats.numOfShots == 1)
         {
-            if (gameObject.GetComponent<TowerScript>().numOfShots % 2 == 0)
+            rotation = targetRotation;
+            spawnBullet(rotation);
+        }
+
+        if (towerStats.numOfShots > 1)
+        {
+            if (towerStats.numOfShots % 2 == 0)
             {
-                for (int i = -gameObject.GetComponent<TowerScript>().numOfShots / 2; i < gameObject.GetComponent<TowerScript>().numOfShots / 2 + 1; i++)
+                for (int i = -towerStats.numOfShots / 2; i < towerStats.numOfShots / 2 + 1; i++)
                 {
                     if (i < 0)
                     {
-                        rotation = targetRotation + (i * gameObject.GetComponent<TowerScript>().shotAngle + gameObject.GetComponent<TowerScript>().shotAngle / 2);
-                        spawnBullet();
+                        rotation = targetRotation + (i * towerStats.shotAngle + towerStats.shotAngle / 2);
+                        spawnBullet(rotation);
                     }
                     if (i > 0)
                     {
-                        rotation = targetRotation + (i * gameObject.GetComponent<TowerScript>().shotAngle - gameObject.GetComponent<TowerScript>().shotAngle / 2);
-                        spawnBullet();
+                        rotation = targetRotation + (i * towerStats.shotAngle - towerStats.shotAngle / 2);
+                        spawnBullet(rotation);
                     }
 
                     
                 }
             }
-            if (gameObject.GetComponent<TowerScript>().numOfShots % 2 == 1 && gameObject.GetComponent<TowerScript>().numOfShots != 1)
+            else
             {
-
-
-                for (int i = (gameObject.GetComponent<TowerScript>().numOfShots - 1) / -2; i < (gameObject.GetComponent<TowerScript>().numOfShots - 1) / 2 + 1; i++)
+                for (int i = (towerStats.numOfShots - 1) / -2; i < (towerStats.numOfShots - 1) / 2 + 1; i++)
                 {
 
-                    rotation = targetRotation + (i * gameObject.GetComponent<TowerScript>().shotAngle);
+                    rotation = targetRotation + (i * towerStats.shotAngle);
 
-                    spawnBullet();
+                    spawnBullet(rotation);
                 }
             }
         }
+        
     }
-
-    void spawnBullet()
+    
+    void spawnBullet(float rotation)
     {
         var Bul = Instantiate(bullet, transform.position, Quaternion.Euler(0, 0, rotation));
-        Bul.GetComponent<BulletScript>().heatSeeking = GetComponent<TowerScript>().heatSeeking;
-        Bul.GetComponent<BulletScript>().bulletSpeed = GetComponent<TowerScript>().speed;
-        Bul.GetComponent<BulletScript>().bulletDamage = GetComponent<TowerScript>().damage;
-        Bul.GetComponent<BulletScript>().bulletPierce = GetComponent<TowerScript>().pierce;
-        Bul.GetComponent<BulletScript>().heatSeeking = GetComponent<TowerScript>().heatSeeking;
-        Bul.GetComponent<SpriteRenderer>().sprite = GetComponent<TowerScript>().bulletSprite;
-        Bul.GetComponent<BulletScript>().slow = GetComponent<TowerScript>().slow;
-        Destroy(Bul.gameObject, GetComponent<TowerScript>().lifetime);
+        Bul.GetComponent<BulletScript>().bulletSpeed = towerStats.speed;
+        Bul.GetComponent<BulletScript>().bulletDamage = towerStats.damage;
+        Bul.GetComponent<BulletScript>().bulletPierce = towerStats.pierce;
+        Bul.GetComponent<BulletScript>().slowAmount = towerStats.slowAmount;
+        Bul.GetComponent<BulletScript>().rotationSpeed = towerStats.rotationSpeed;
+        Bul.GetComponent<SpriteRenderer>().sprite = towerStats.bulletSprite;
+        Bul.GetComponent<BulletScript>().timeLeft = towerStats.lifetime;
         Bul.GetComponent<BulletScript>().target = target;
         Bul.GetComponent<BulletScript>().firstTarget = target;
         Bul.GetComponent<BulletScript>().towerParent = gameObject;
-        Bul.GetComponent<BulletScript>().rotationSpeed = GetComponent<TowerScript>().rotationSpeed;
+        
     }
 }

@@ -4,19 +4,27 @@ using UnityEngine;
 
 public class BulletScript : MonoBehaviour
 {
+    
+
+
     public float bulletSpeed;
     public float bulletDamage;
     public int bulletPierce;
-    public bool heatSeeking;
-    public bool slow;
+    public float slowAmount;
+    public float rotationSpeed;
+
+    public float timeLeft;
+
     public GameObject target;
-    public List<GameObject> hitEnemies;
     public GameObject towerParent;
     public GameObject firstTarget;
-    public float rotationSpeed;
     
 
-    
+
+
+    public List<GameObject> hitEnemies;
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -34,12 +42,17 @@ public class BulletScript : MonoBehaviour
             bulletPierce -= 1;
             towerParent.GetComponent<TowerScript>().damageDone += bulletDamage;
 
-            
-             
-                if (slow==true && enemy.GetComponent<EnemyScript>().currentSpeed > enemy.GetComponent<EnemyScript>().speed*0.1f)
+            if (slowAmount != 0)
+            {
+                if (enemy.GetComponent<EnemyScript>().currentSpeed > enemy.GetComponent<EnemyScript>().speed / 3)
                 {
-                    enemy.GetComponent<EnemyScript>().currentSpeed *= 0.75f;
+                    enemy.GetComponent<EnemyScript>().currentSpeed *= (1 / Mathf.Pow(1.08f, slowAmount));
                 }
+                else
+                {
+                    enemy.GetComponent<EnemyScript>().currentSpeed = enemy.GetComponent<EnemyScript>().speed / 3;
+                }
+            }
             
 
             if (bulletPierce < 0)
@@ -57,15 +70,22 @@ public class BulletScript : MonoBehaviour
             target=heatSeekingNewTarget();
         }
         */
+        timeLeft -= Time.deltaTime;
+        if (timeLeft < 0)
+        {
+            Destroy(gameObject);
+        }
 
         //Set target to closest enemy only after current target is hit or killed
-        if (heatSeeking == true && (target == null || hitEnemies.Contains(target)))
+        if (rotationSpeed != 0 && (target == null || hitEnemies.Contains(target)))
         {
             target = heatSeekingNewTarget();
         }
 
+        //Add upgrade that allows seeking targeted seeking - first, last, strong, close
 
-        if (heatSeeking == true && target != null)
+
+        if (rotationSpeed != 0 && target != null)
         {
             heatSeekingRotate();
             GetComponent<Rigidbody2D>().velocity = transform.up * bulletSpeed;

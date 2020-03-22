@@ -7,6 +7,8 @@ using UnityEngine.UI;
 public class GameController : MonoBehaviour
 {
     public GameObject[] turns;
+    public TowerStatsSO[] towerStats;
+    public TowerUpgradesSO[] towerUpgrades;
     public float sellPercentage = 0.67f;
     public GameObject enemy;
     public GameObject tower;
@@ -21,7 +23,8 @@ public class GameController : MonoBehaviour
     public int SBSpawnMode=0;
     public float spawnDeltaTime;
     public int activePhantomTower = -1;
-    public bool overTower = false;
+    public GameObject upgradeMenu;
+    public GameObject selectedTower;
 
     public int money;
     public int lives;
@@ -39,6 +42,15 @@ public class GameController : MonoBehaviour
     }
     void Update()
     {
+        
+        /*Vector3 upgradeMenuV = upgradeMenu.transform.position;
+        upgradeMenuV.y++;
+        upgradeMenu.transform.position = upgradeMenuV;*/
+        if (Application.isFocused == false)
+        {
+            activePhantomTower = -1;
+        }
+
         spawnDeltaTime = Time.deltaTime;
         if (Input.GetKeyDown(KeyCode.Z))
         {
@@ -49,10 +61,7 @@ public class GameController : MonoBehaviour
             Time.timeScale /= 2;
         }
 
-
-        //Debug.Log(1 / Time.deltaTime);
         GameObject[] remainingEnemies = GameObject.FindGameObjectsWithTag("Enemy");
-        Debug.Log(remainingEnemies.Length);
         if (allEnemiesSent == true)
         {
             if (remainingEnemies.Length == 0)
@@ -80,12 +89,10 @@ public class GameController : MonoBehaviour
         if (Input.GetKey(KeyCode.T))
         {
             gameObject.GetComponent<SpawningScript>().spawn(4);
-
         }
         if (Input.GetKey(KeyCode.Y))
         {
             gameObject.GetComponent<SpawningScript>().spawn(5);
-
         }
         if (Input.GetKey(KeyCode.U))
         {
@@ -105,44 +112,15 @@ public class GameController : MonoBehaviour
         }
         if (Input.GetKey(KeyCode.Escape))
         {
-            Destroy(GameObject.FindGameObjectsWithTag("PhantomTower")[0]);
-            activePhantomTower = -1;
+            if(activePhantomTower != -1)
+            {
+                Destroy(GameObject.FindGameObjectsWithTag("PhantomTower")[0]);
+                activePhantomTower = -1;
+            }
+            
         }
 
-        /*
-        if (Input.GetKey(KeyCode.Return))
-        { if (SBSpawnMode < 4)
-            {
-                SBSpawnMode += 1;
-            }
-            else
-            {
-                SBSpawnMode = 0;
-            }
-
-            if (SBSpawnMode == 1)
-            {
-                field.SetActive(true);
-            }
-        }
-        
-            int SBEnemyType;
-            int SBEnemyCount;
-            float SBEnemySpacing;
-            field.SetActive(true);
-
-            int SBEnemyType;
-            int SBEnemyCount;
-            float SBEnemySpacing;
-
-
-
-
-            StartCoroutine(spawnEnemies(0, 5, 1f));
-            */
-
-
-
+       
 
 
         /*if (Input.GetMouseButtonDown(0) && Input.GetKey(KeyCode.A))
@@ -207,42 +185,75 @@ public class GameController : MonoBehaviour
                 allEnemiesSent = false;
                 gameObject.GetComponent<SpawningScript>().nextWave(wave);
                 GameObject[] remainingBullets = GameObject.FindGameObjectsWithTag("Bullet");
-                for (int i = 0; i < remainingBullets.Length; i++)
+                foreach(GameObject i in remainingBullets)
                 {
-                    Destroy(remainingBullets[i]);
+                    Destroy(i);
                 }
 
             }
         }
-
-        if (activePhantomTower > -1 && Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))
         {
-            towerSpawn(activePhantomTower);
-        }
-
-        if (activePhantomTower == -1 && Input.GetMouseButtonDown(0) && overTower == false)
-        {
-            GameObject[] rangeDisplays = GameObject.FindGameObjectsWithTag("RangeDisplay");
-            foreach (GameObject i in rangeDisplays)
+            Vector3 worldPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            worldPoint.z = Camera.main.transform.position.z;
+            Ray ray = new Ray(worldPoint, new Vector3(0, 0, 1));
+            RaycastHit2D[] hits = Physics2D.GetRayIntersectionAll(ray);
+            bool[] colType = new bool[3];
+            for(int i = 0; i < hits.Length; i++)
             {
-                Destroy(i);
+                if (hits[i].collider.CompareTag("PhantomTower"))
+                {
+                    colType[0] = true;
+                }
+                else if (hits[i].collider.CompareTag("Tower"))
+                {
+                    selectedTower = hits[i].collider.gameObject;
+                    colType[1] = true;
+                }
+                else if (hits[i].collider.CompareTag("Map"))
+                {
+                    colType[2] = true;
+                }
             }
 
+            //clicked phantom tower
+            if (colType[0] == true)
+            {
+                towerSpawn(activePhantomTower);
+            }
+            //clicked tower
+            else if(colType[1] == true)
+            {
+                selectedTower.SendMessage("selectTower");
+            }
+            //clicked map
+            else if(colType[2] == true)
+            {
+                GameObject[] rangeDisplays = GameObject.FindGameObjectsWithTag("RangeDisplay");
+                foreach (GameObject i in rangeDisplays)
+                {
+                    Destroy(i);
+                }
+
+                Vector3 upgradeMenuV = upgradeMenu.transform.position;
+                upgradeMenuV.y = -96;
+                upgradeMenu.transform.position = upgradeMenuV;
+                selectedTower = null;
+
+            }
         }
         moneyText.text = money.ToString();
         livesText.text = lives.ToString();
 
     }
 
-
-
     public void phantomTowerSpawn(int towerType)
     {
-        if (money >= tower.GetComponent<TowerScript>().costs[towerType]) {
+        if (money >= towerStats[towerType].cost) {
             GameObject[] existingPhantomTower = GameObject.FindGameObjectsWithTag("PhantomTower");
-            for (int i = 0; i < existingPhantomTower.Length; i++)
+            foreach (GameObject i in existingPhantomTower)
             {
-                Destroy(existingPhantomTower[i]);
+                Destroy(i);
             }
 
             GameObject[] rangeDisplays = GameObject.FindGameObjectsWithTag("RangeDisplay");
@@ -251,56 +262,32 @@ public class GameController : MonoBehaviour
                 Destroy(i);
             }
 
+            Vector3 upgradeMenuV = upgradeMenu.transform.position;
+            upgradeMenuV.y = -96;
+            upgradeMenu.transform.position = upgradeMenuV;
+
             Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             mousePos = new Vector2(mousePos.x, mousePos.y);
             var PhantomTower = Instantiate(phantomTower, mousePos, Quaternion.identity);
-            PhantomTower.GetComponent<SpriteRenderer>().sprite = tower.GetComponent<TowerScript>().towerSprites[towerType];
-            PhantomTower.GetComponent<PhantomTowerScript>().id = towerType;
-            PhantomTower.GetComponent<PhantomTowerScript>().range = tower.GetComponent<TowerScript>().ranges[towerType];
-            PhantomTower.GetComponent<PhantomTowerScript>().size = tower.GetComponent<TowerScript>().sizes[towerType];
-            PhantomTower.GetComponent<PhantomTowerScript>().size = tower.GetComponent<TowerScript>().sizes[towerType];
-            PhantomTower.GetComponent<PhantomTowerScript>().colliderLength = tower.GetComponent<TowerScript>().colliderLengths[towerType];
-            PhantomTower.GetComponent<PhantomTowerScript>().colliderHeight = tower.GetComponent<TowerScript>().colliderHeights[towerType];
-            PhantomTower.GetComponent<PhantomTowerScript>().colliderOffsetX = tower.GetComponent<TowerScript>().colliderOffsetsX[towerType];
-            PhantomTower.GetComponent<PhantomTowerScript>().colliderOffsetY = tower.GetComponent<TowerScript>().colliderOffsetsY[towerType];
+            PhantomTower.GetComponent<PhantomTowerScript>().towerStats = GetComponent<GameController>().towerStats[towerType];
             activePhantomTower = towerType;
             placeable = false;
         }
     }
 
 
-    void towerSpawn(int towerType)
+    public void towerSpawn(int towerType)
     {
         GameObject mapCol = GameObject.Find("Map1");
-        
 
-        if (placeable==true)
+        if (placeable == true)
         {
-            money -= tower.GetComponent<TowerScript>().costs[towerType];
+            money -= towerStats[towerType].cost;
             Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             mousePos = new Vector2(mousePos.x, mousePos.y);
             var Tower = Instantiate(tower, mousePos, Quaternion.identity);
-            Tower.GetComponent<TowerScript>().damage = Tower.GetComponent<TowerScript>().damages[towerType];
-            Tower.GetComponent<TowerScript>().cost = Tower.GetComponent<TowerScript>().costs[towerType];
-            Tower.GetComponent<TowerScript>().slow = Tower.GetComponent<TowerScript>().slows[towerType];
-            Tower.GetComponent<TowerScript>().range = Tower.GetComponent<TowerScript>().ranges[towerType];
-            Tower.GetComponent<TowerScript>().pierce = Tower.GetComponent<TowerScript>().pierces[towerType];
-            Tower.GetComponent<TowerScript>().heatSeeking = Tower.GetComponent<TowerScript>().heatSeekings[towerType];
-            Tower.GetComponent<TowerScript>().frequency = Tower.GetComponent<TowerScript>().frequencies[towerType];
-            Tower.GetComponent<TowerScript>().lifetime = Tower.GetComponent<TowerScript>().lifetimes[towerType];
-            Tower.GetComponent<TowerScript>().speed = Tower.GetComponent<TowerScript>().speeds[towerType];
-            Tower.GetComponent<TowerScript>().bulletSprite = Tower.GetComponent<TowerScript>().bulletSprites[towerType];
-            Tower.GetComponent<SpriteRenderer>().sprite = Tower.GetComponent<TowerScript>().towerSprites[towerType];
-            Tower.GetComponent<TowerScript>().numOfShots = Tower.GetComponent<TowerScript>().numsOfShots[towerType];
-            Tower.GetComponent<TowerScript>().shotAngle = Tower.GetComponent<TowerScript>().shotAngles[towerType];
-            Tower.GetComponent<TowerScript>().rotationSpeed = Tower.GetComponent<TowerScript>().rotationSpeeds[towerType];
-            Tower.GetComponent<TowerScript>().size = Tower.GetComponent<TowerScript>().sizes[towerType];
-            Tower.GetComponent<TowerScript>().size = Tower.GetComponent<TowerScript>().sizes[towerType];
-            Tower.GetComponent<TowerScript>().colliderLength = Tower.GetComponent<TowerScript>().colliderLengths[towerType];
-            Tower.GetComponent<TowerScript>().colliderHeight = Tower.GetComponent<TowerScript>().colliderHeights[towerType];
-            Tower.GetComponent<TowerScript>().colliderOffsetX = Tower.GetComponent<TowerScript>().colliderOffsetsX[towerType];
-            Tower.GetComponent<TowerScript>().colliderOffsetY = Tower.GetComponent<TowerScript>().colliderOffsetsY[towerType];
-            Tower.GetComponent<TowerScript>().id = Tower.GetComponent<TowerScript>().ids[towerType];
+            Tower.GetComponent<Shooting>().baseTowerStats = towerStats[towerType];
+            Tower.GetComponent<TowerScript>().towerUpgrades = towerUpgrades[towerType];
             activePhantomTower = -1;
         }
     }
