@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92db2acd1bff2534e996656ea6b01c37, type: 3}
+  m_Name: Tower1Upgrades
+  m_EditorClassIdentifier: 
+  cost: 64000000960000002c010000ee020000dc05000096000000fa000000ee020000e2040000d0070000
+  range:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0.2
+  - 0
+  - 0.2
+  - 0
+  - 0.3
+  damage:
+  - 0.25
+  - 0.2
+  - 2
+  - 0.5
+  - 1
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0.2
+  frequency:
+  - 0
+  - 0
+  - -0.67
+  - 0
+  - -0.2
+  - 0
+  - 0.2
+  - 0.5
+  - 0.33
+  - 0.5
+  pierce: 00000000000000000200000001000000060000000000000000000000000000000000000003000000
+  speed:
+  - 0
+  - 0
+  - -0.67
+  - 0
+  - -0.5
+  - 0
+  - 0
+  - 0.2
+  - 0.05
+  - 0.25
+  lifetime:
+  - 0
+  - 0
+  - 2
+  - 0.5
+  - 0.5
+  - 0
+  - 0
+  - -0.5
+  - 0
+  - -0.25
+  numOfShots: 00000000000000000000000000000000000000000000000000000000020000000100000003000000
+  shotAngle:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 10
+  - -2.5
+  - -3.2
+  rotationSpeed:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  slowAmount:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  descriptions:
+  - Increase damage
+  - Increase damage even more
+  - Shoot slow, powerful energy balls
+  - Bullets last longer and gain more damage and peirce
+  - Shoot super powerful bullets
+  - Increased range
+  - Shoot faster
+  - Shoot 3 bullets even faster and over longer range
+  - Adds an additional projectile. All bullets move and fire even faster
+  - That's fast

@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 059c5e6cf7335444a9afdb1adf4ca531, type: 3}
+  m_Name: Tower2Stats
+  m_EditorClassIdentifier: 
+  damage: 1
+  cost: 200
+  slowAmount: 0
+  range: 85
+  pierce: 50
+  frequency: 1
+  towerSprite: {fileID: 21300000, guid: 1e1a8fa19d769834693b692c75b74ab8, type: 3}
+  towerSpriteRed: {fileID: 21300000, guid: c65f75d680be3f0469f568a52b5270e8, type: 3}
+  lifetime: 2.5
+  speed: 50
+  bulletSprite: {fileID: 21300000, guid: 09a57c0681d731c47aa395411d13a9bc, type: 3}
+  rotationSpeed: 0
+  numOfShots: 300
+  shotAngle: 1.2
+  size: 10
+  colliderLength: 10
+  colliderHeight: 10
+  colliderOffsetX: 0
+  colliderOffsetY: 0
+  id: 1
+  upgradeStat: []
+  build: {fileID: 7400000, guid: 58b5f431449585c41862e5c51a876ea8, type: 2}
+  idle: {fileID: 7400000, guid: 019911cc1f3c42c42a9e6f35b26e5266, type: 2}
+  shoot: {fileID: 7400000, guid: c353c32c07c3410479529a5fb8b3de5b, type: 2}
